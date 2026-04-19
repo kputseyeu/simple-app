@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - VAULT_ADDR=${VAULT_ADDR:-http://vault:8080}
+      - VAULT_TOKEN=${VAULT_TOKEN}
+      - VAULT_SECRET_PATH=${VAULT_SECRET_PATH:-secret/data/myapp/config}
+    restart: unless-stopped

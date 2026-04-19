@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: simple-app
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: simple-app
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:YOUR-ORG/infra.git
+    targetRevision: main
+    path: helm/simple-app
+    helm:
+      valueFiles:
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: simple-app
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
