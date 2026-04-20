@@ -7,3 +7,4 @@ npm-debug.log
 *.log
 coverage
 dist
+eso/*-token-secret.yaml
