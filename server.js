@@ -99,6 +99,23 @@ function getJwtSecret() {
 app.use(express.json());
 app.use(express.static('public'));
 
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access denied. No token provided.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, getJwtSecret());
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: 'Invalid or expired token.' });
+  }
+}
+
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -148,12 +165,35 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-app.get('/dashboard', async (req, res) => {
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+app.get('/api/dashboard', authenticateToken, async (req, res) => {
   try {
-    await pool.query('SELECT NOW() as db_time');
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    const userResult = await pool.query('SELECT id, username, email, created_at FROM users WHERE id = $1', [req.user.userId]);
+    if (!userResult.rows.length) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = userResult.rows[0];
+
+    const statsResult = await pool.query('SELECT COUNT(*) as total_users FROM users');
+    const totalUsers = parseInt(statsResult.rows[0].total_users);
+
+    res.json({
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        registeredAt: user.created_at
+      },
+      stats: {
+        totalUsers
+      },
+      serverTime: new Date().toISOString()
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Database connection failed' });
+    res.status(500).json({ error: 'Failed to fetch dashboard data' });
   }
 });
 

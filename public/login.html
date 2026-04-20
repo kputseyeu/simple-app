@@ -98,7 +98,7 @@
 
                 if (response.ok) {
                     localStorage.setItem('token', data.token);
-                    window.location.href = '/dashboard';
+                    window.location.href = '/dashboard?action=login';
                 } else {
                     messageDiv.innerHTML = '<p class="error">' + data.error + '</p>';
                 }

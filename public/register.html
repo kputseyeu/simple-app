@@ -101,7 +101,7 @@
                 if (response.ok) {
                     messageDiv.innerHTML = '<p class="success">' + data.message + '</p>';
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = '/dashboard?action=register';
                     }, 1500);
                 } else {
                     messageDiv.innerHTML = '<p class="error">' + data.error + '</p>';
